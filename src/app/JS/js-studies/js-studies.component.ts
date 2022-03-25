@@ -1,57 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'curso-rw-dev',
-  templateUrl: './curso-rw-dev.component.html',
-  styleUrls: ['./curso-rw-dev.component.css']
+  selector: 'js-studies',
+  templateUrl: './js-studies.component.html',
+  styleUrls: ['./js-studies.component.css']
 })
-export class CursoRwDevComponent implements OnInit {
+export class JSStudiesComponent implements OnInit {
 
   constructor() { }
 
-  ngOnInit() {
-    this.aula01()
+  ngOnInit(): void {
     this.aprendendoArrayReduce()
   }
-
-
-  //! AULA 01
-
-  // PROGRAMAÇÃO REATIVA:
-  // PARADIGMA BASEADO NO FLUXO DE DADOS ASSÍNCRONOS E NA PROPAGAÇÃO DE MUDANÇAS NESSE FLUXO;
-
-  aula01(){
-    const pessoas = [
-      {nome: 'João', sexo: 'masculino', idade: 18},
-      {nome: 'José', sexo: 'masculino', idade: 32},
-      {nome: 'Maria', sexo: 'feminino', idade: 11},
-      {nome: 'Julia', sexo: 'feminino', idade: 23}
-    ]
-
-    const maioresAgrupadosPorGenero = (pessoas: any[]) =>
-      pessoas
-      .filter(e => e.idade >= 18)
-      .reduce((a,b) => ({
-        ...a,
-        [b.sexo]: [...(a[b.sexo] || []), b]
-      }), {})
-
-    let pessoasAgrupadas = maioresAgrupadosPorGenero(pessoas)
-    console.log(pessoasAgrupadas)
-
-    //* ---- OUTPUT ----
-    // {
-    //   feminino: [
-    //     {nome: 'Julia', sexo: 'feminino', idade: 23}
-    //   ]
-    //   masculino: [
-    //     {nome: 'João', sexo: 'masculino', idade: 18},
-    //     {nome: 'José', sexo: 'masculino', idade: 32}
-    //   ]
-    // }
-
-  }
-
 
   aprendendoArrayReduce(){
 
@@ -64,7 +24,7 @@ export class CursoRwDevComponent implements OnInit {
       (previousValue, currentValue) => previousValue + currentValue,
       initialValue
     );
-    // console.log(sumWithInitial);
+    console.log(sumWithInitial);
     // expected output: 10
 
     //TODO VÍDEO CANAL DEV SOLTINHO
@@ -72,12 +32,12 @@ export class CursoRwDevComponent implements OnInit {
     const numeros = [10,20,30,40,50]
 
     const total = numeros.reduce((acumulador,item) => {
-      // console.log('acumulador', acumulador) // retorna, um de cada vez: 10, 30, 60, 100
-      // console.log('item', item) // retorna, um de cada vez: 20, 30, 40, 50
+      console.log('acumulador', acumulador) // retorna, um de cada vez: 10, 30, 60, 100
+      console.log('item', item) // retorna, um de cada vez: 20, 30, 40, 50
       return acumulador + item
     })
 
-    // console.log(total) // 150
+    console.log(total) // 150
     // O REDUCE PODE PARECER QUE FAZ APENAS REDUÇÕES, MAS NA VERDADE FAZ TRANSFORMAÇÕES.
     // PODEMOS TRANSFORMAR UM ARRAY NUMA STRING, NUM OBJETO OU QUALQUER OUTRA COISA NÓS PODEMOS
 
@@ -86,8 +46,8 @@ export class CursoRwDevComponent implements OnInit {
 
     const maiorPalavra = palavras.reduce((maiorPalavra, palavraAtual) => {
       //! O PRIMEIRO PARÂMETRO É O VALOR ANTERIOR (previous, current)
-      // console.log('maiorPalavra:', maiorPalavra)
-      // console.log('palavraAtual:', palavraAtual)
+      console.log('maiorPalavra:', maiorPalavra)
+      console.log('palavraAtual:', palavraAtual)
 
       if(palavraAtual.length > maiorPalavra.length) {
         return palavraAtual
@@ -95,7 +55,7 @@ export class CursoRwDevComponent implements OnInit {
       return maiorPalavra
     }, '') // essa string vazia('') quer dizer um valor inicial padrão
 
-    // console.log('Maior Palavra ->', maiorPalavra)  // Maior Palavra -> Paralelepipedo
+    console.log('Maior Palavra ->', maiorPalavra)  // Maior Palavra -> Paralelepipedo
 
     //! Logo, a rotina é a seguinte:
     //! Primeira iteração: '' e 'oi'
@@ -124,11 +84,6 @@ export class CursoRwDevComponent implements OnInit {
       }
     ]
 
-    const objetoFinal = {
-      electric: [],
-      water: []
-    }
-
     const pokemonsPorTipo = pokemons.reduce((pokemonsPorTipo: any, pokemonAtual:any) => {
       console.log('pokemonPorTipo',pokemonsPorTipo)
       console.log('pokemonAtual',pokemonAtual) //retorna { name: 'Pikachu',type: 'eletric'},{ name: 'Squirtle',type: 'water'}, {name: 'Magikarp',type: 'water'}, um de cada vez.
@@ -146,13 +101,5 @@ export class CursoRwDevComponent implements OnInit {
     }, {}) // como queremos um objeto ao final da iteração, setamos ele como objeto inicialmente
 
     console.log(pokemonsPorTipo)
-
-
-
   }
-}
-
-export class Pokemon {
-  name: string
-  water: string
 }
