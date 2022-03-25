@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { filter, from, reduce } from 'rxjs';
+import { filter, from, Observable, reduce } from 'rxjs';
 
 @Component({
   selector: 'curso-rw-dev',
@@ -11,10 +11,10 @@ export class CursoRwDevComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    this.aula01()
-    this.maioresAgrupadosPorGenero()
+    // this.aula01()
+    this.aula02()
+
   }
-  //! AULA 01
 
   // PROGRAMAÇÃO REATIVA:
   // PARADIGMA BASEADO NO FLUXO DE DADOS ASSÍNCRONOS E NA PROPAGAÇÃO DE MUDANÇAS NESSE FLUXO;
@@ -93,11 +93,110 @@ export class CursoRwDevComponent implements OnInit {
         }
       ),{})
     )
-    .subscribe(
+    .subscribe( //TODO ----  O FLUXO SÓ É PROCESSADO QUANDO HOUVER UM SUBSCRIBE(É COMO SE HOUVESSE UMA FILA, E QUANDO ATIVAMOS O SUBSCRIBE A FILA É ESCOADA)
+
       res => console.log('observable',res),
       error => console.log(error),
       () => {}
     )
+
+    this.maioresAgrupadosPorGenero()
   }
-  //TODO ----  O FLUXO SÓ É PROCESSADO QUANDO HOUVER UM SUBSCRIBE(É COMO SE HOUVESSE UMA FILA, E QUANDO ATIVAMOS O SUBSCRIBE A FILA É ESCOADA)
+
+  aula02(){
+    //OBSERVABLES E PROMISES SÃO ENCAPSULADORES DE DADOS QUE NOS FORNECEM MÉTODOS PARA TRATÁ-LOS
+
+    //? DIFERENÇAS ENTRE PROMISES E OBSERVABLES:
+
+    //TODO -------- PROMISES
+    //* 1 - EMITEM ÚNICO VALOR
+    //* 2 - EXECUÇÃO IMEDIATA(EAGER)
+    //* 3 - COMPARTILHADAS(MULTICAST)
+
+    //TODO -------- OBSERVABLES
+    //* 1 - EMITEM MÚLTIPLOS VALORES
+    //* 2 - EXECUÇÃO SOB DEMANDA(LAZY)
+    //* 3 - PODEM SER COMPARTILHADAS OU NÃO(MULTICAST OU UNICAST, RESPECTIVAMENTE)
+
+
+    let promise = new Promise((resolve) => {
+      resolve(1)
+      resolve(2) //! NÃO ACONTECE NADA AQUI, PQ PROMISE SÓ EMITE UM VALOR
+    }).then(num => console.log('Promise',num))
+
+    Observable.create((observer: any) => {
+      observer.next(1)
+      observer.next(2) //! JÁ AQUI ACONTECE, PQ PODEMOS EMITIR MÚLTIPLOS VALORES NUM OBSERVABLE
+    }).subscribe((num: any) => console.log('Observable',num))
+
+    let promise2 = new Promise((resolve) => {
+      console.log('Iniciando a promise2')
+      resolve(1)
+      resolve(2)
+    })
+    // .then(num => console.log('Promise',num)) //! ESSE BLOCO SERÁ EXECUTADO, POIS A PROMISE TEM EXECUÇÃO IMEDIATA, INDEPENDENTE DO .then
+
+    Observable.create((observer: any) => {
+      console.log('Iniciando o observable')
+      observer.next(1)
+      observer.next(2)
+    })
+    // .subscribe((num: any) => console.log('Observable',num)) //! JÁ AQUI, ESSE BLOCO NÃO SERÁ EXECUTADO, POIS OBSERVABLES SAO EXECUTADOS APENAS SOB DEMANDA, DEPENDENDO DO .subscribe
+
+    //TODO ----- SE NOS INSCREVERMOS NESSE OBSERVABLE, AÍ SIM ELE SERÁ INICIADO:
+
+    const observer = Observable.create((observer: any) => {
+      console.log('Iniciando o observable')
+    })
+
+    setTimeout(() => {
+      observer.subscribe((num:any) => console.log('Observable', num))
+    }, 2000); //! PORTANTO, AQUI, APÓS 2 SEGUNDOS, O OBSERVABLE É ATIVADO
+
+    let promise3 = new Promise((resolve) => {
+      console.log('Iniciando a promise3')
+      setTimeout(() => {
+        resolve(1) //promise3 emite um valor
+      }, 3000);
+    })
+
+    const observer3 = Observable.create((observer: any) => {
+      console.log('Iniciando o observable2')
+      setTimeout(() => {
+        observer.next(1)
+      }, 3000)
+
+    })
+
+    promise3.then((num: any) => console.log('Promise3', num)) // tratamos aqui a emissão do valor de promise3
+    observer3.subscribe((num: any) => console.log('Observer3', num) ) // nos inscrevemos para ser notificados de mudanças no observer3
+
+    setTimeout(() => {
+      promise3.then((num: any) => console.log('Promise3', num)) // NOVAMENTE tratamos a emissão do valor de promise3
+      observer3.subscribe((num: any) => console.log('Observer3', num) ) // nos inscrevemos NOVAMENTE para ser notificados de mudanças no observer3
+    }, 2000);
+
+    //! promise3 e observer3 ilustram como promises tem estado compartilhado e observables não. Todos os "then's" são executados após 3 segundos, enquanto que os subscribes são executados cada um no seu tempo.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  }
+
+
 }
