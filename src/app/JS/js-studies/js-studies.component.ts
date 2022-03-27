@@ -10,7 +10,22 @@ export class JSStudiesComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    this.aprendendoArrayReduce()
+    // this.aprendendoArrayReduce()
+    // this.entendendoPromises()
+
+    let promise = new Promise((res, rej) => {
+      res(1)
+    })
+
+    promise.then((data) => {
+      console.log('Primeiro then')
+    })
+
+    setTimeout(() => {
+      promise.then((data) => {
+        console.log('Primeiro then')
+      })
+    }, 2000);
   }
 
   aprendendoArrayReduce(){
@@ -101,5 +116,136 @@ export class JSStudiesComponent implements OnInit {
     }, {}) // como queremos um objeto ao final da iteração, setamos ele como objeto inicialmente
 
     console.log(pokemonsPorTipo)
+  }
+
+  entendendoPromises() {
+    // Vídeo "Aprenda tudo sobre Promises de JavaScript em 20 minutos"
+
+    //TODO ------ PROMISES
+
+    //? - Promises são como promessas da vida real, ela está esperando algum retorno;
+    // "Sempre que criamos uma Promise(por exemplo, esperar a resposta de um servidor externo), e assim que essa resposas for recebida, resolveremos essa promessa(mensagem de sucesso ou erro)"
+    // "Portanto, estamos prometendo ao JavaScript que algo vai acontecer, e, a partir desse 'algo', faremos alguma outra lógica"
+    //? - Para criar uma promessa, instaciamos a classe Promise;
+    //? - Que leva dois argumentos: resolve(solução) e reject(erro);
+    //? - Para encadear mais processos utilizamos o método .then();
+    //? - Alguns recursos de JS(Fetch API) e bibliotecas retornam Promises.
+
+    //* 1 - CRIAÇÃO DE UMA PROMISE
+    const myPromise = new Promise((resolve, reject) => {
+      const nome = "Murillo" //iremos supor que esse nome vem de uma requisição externa.
+
+      if(nome === 'Murillo') {
+        resolve('Usuário Murillo encontrado')
+      } else {
+        reject('O usuário Murillo não foi encontrado!')
+      }
+    })
+
+    // Mas como saber o resultado final(se teve sucesso ou erro) ? Usando o método .then
+
+    myPromise.then((data) => { // Aqui pode ser um parâmetro qualquer.
+      console.log(data)
+    })
+
+    //* 2 - ENCADEAMENTO DE ".then"
+
+    const myPromise2 = new Promise((resolve, reject) => {
+      const nome = "Murillo"
+
+      if(nome === 'Murillo') {
+        resolve('Usuário Murillo encontrado')
+      } else {
+        reject('O usuário Murillo não foi encontrado!')
+      }
+    })
+
+    // Podemos encadear nossa Promise quantas vezes quisermos, para poder modificar nosso dado da maneira como procisarmos:
+
+    myPromise2.then((data) => {
+      return (data as string).toLowerCase() // para encadearmos, a promise anterior deve retornar algo.
+    }).then((stringModificada) => {
+      console.log(stringModificada)
+    })
+
+    //* 3 - RETORNO DO REJECT(USANDO .catch)
+
+    const myPromise3 = new Promise((resolve, reject) => {
+      const nome = "Murillo"
+
+      if(nome !== 'Murillo') { //! ATENÇÃO: AQUI O EXEMPLO É DIFERENTE DOS ANTERIORES, FORÇANDO O ERRO.
+        resolve('Usuário Murillo encontrado')
+      } else {
+        reject('O usuário Murillo não foi encontrado!')
+      }
+    })
+
+    myPromise3.then((data) => {
+      console.log(data)
+    }).catch((error) => {
+      console.log('Aconteceu um erro: ' + error) // Quando usamos o .catch, nosso console não nos retornará uma exception (aquela mensagem vermelha), e sim a mensagem "Aconteceu um erro...". Assim o fluxo do código não é interrompido, e podemos seguí-lo normalmente.
+    })
+
+
+    //* 4 - RESOLVENDO VÁRIAS PROMISES (UTILIZANDO .all)
+
+    const p1 = new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve('P1 ok! Timeout')
+      }, 2000);
+    })
+    const p2 = new Promise((resolve, reject) => {
+      resolve('P2 ok!')
+    })
+    const p3 = new Promise((resolve, reject) => {
+      resolve('P3 ok!')
+    })
+
+    const resolveAll = Promise.all([p1, p2, p3]).then(
+      (data) => {
+        console.log(data) // Todas respostas virão juntas num array.
+                          //! APENAS APÓS 2s ELAS SERÃO RESOLVIDAS
+      }
+    )
+
+    //* 4 - RESOLVENDO VÁRIAS PROMISES (UTILIZANDO .race)
+
+    const p4 = new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve('P4 ok! Timeout')
+      }, 2000);
+    })
+    const p5 = new Promise((resolve, reject) => {
+      resolve('P5 ok!')
+    })
+    const p6 = new Promise((resolve, reject) => {
+      resolve('P6 ok!')
+    })
+
+    const resolverRace = Promise.race([p4, p5, p6]).then( //! O MÉTODO .race RETORNA A PROMISE QUE FOR RESOLVIDA PRIMEIRO
+      (data) => {
+        console.log(data)
+      }
+    )
+
+    //* FETCH REQUEST NA API DO GITHUB (UTILIZANDO O FETCH API, QUE É UMA API NATIVA DO JAVASCRIPT PARA PODER FAZER REQUISIÇÕES ASSÍNCRONAS, OU SEJA, AJAX)
+
+    const userName = 'murilloluisi'
+
+    fetch(`https://api.ithub.com/users/${userName}`, { //Retorna uma promise
+      method: 'GET',
+      headers: {
+        Accept: 'application/vnd.github.v3+json'
+      }
+    }).then((response) => {
+      console.log(typeof response)
+      console.log(response)
+      return response.json()
+    }).then((data) => {
+      console.log(data)
+      console.log(`O nome do usuário é: ${data.name}`)
+    }).catch((error) => {
+      console.log(`Houve algum erro: ${error}`)
+    })
   }
 }
