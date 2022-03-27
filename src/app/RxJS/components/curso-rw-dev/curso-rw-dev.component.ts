@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { filter, from, observable, Observable, reduce, share, Subject } from 'rxjs';
+import { AsyncSubject, BehaviorSubject, filter, from, observable, Observable, reduce, ReplaySubject, share, Subject, subscribeOn } from 'rxjs';
 
 @Component({
   selector: 'curso-rw-dev',
@@ -14,7 +14,9 @@ export class CursoRwDevComponent implements OnInit {
     // this.aula01()
     // this.aula02()
     // this.aula03()
-    this.aula04()
+    // this.aula04()
+    // this.aula05()
+    this.aula06()
   }
 
   // PROGRAMAÇÃO REATIVA:
@@ -454,6 +456,120 @@ export class CursoRwDevComponent implements OnInit {
       subscription5.unsubscribe()
     }, 3000);
 
-    //! NADA É EMITIDO, POR QUE? PORQUE DA LINHA 442 A LINHA 445 TODOS OS VALORES JA FORAM EMITIDOS, SÓ DEPOIS QUE NOS INSCREVEMOS. PORTANTO, "PERDEMOS" ESSES VALORES
+    //! NADA É EMITIDO, POR QUE? PORQUE DA LINHA 442 A LINHA 445 TODOS OS VALORES JA FORAM EMITIDOS, SÓ DEPOIS QUE NOS INSCREVEMOS. PORTANTO, "PERDEMOS" ESSES VALORES. O SUBJECT NÃO TÁ NEM AI SE ALGUÉM SE INSCREVEU OU NÃO.
   }
+
+  aula05(){ //* BehaviorSubject, AsyncSubject e ReplaySubject
+
+    //* BEHAVIOR SUBJECT
+
+    // ESTE TIPO DE SUBJECT INICIA COM UM VALOR, E SEMPRE MANTÉM O ÚLTIMO VALOR PRA SER EMITIDO A QUALQUER NOVO SUBSCRIBER.
+    // É COMO SE ELE MANTESSE UMA MEMÓRIA DA ÚLTIMA EMISSÃO
+
+
+    const sub = new BehaviorSubject(0)
+
+    sub.subscribe({
+      next: (num: any) => console.log('Observable 1', num), // Printa 0, 1, 2, 3, 4 //! Por que pega os 4 próximos ? Porque ele já está inscrito e consegue pgar os próximos valores, até se desinscrever
+      error: (err: any) => console.log('Error', err),
+      complete: () => console.log('Completado')
+    })
+
+    sub.next(1)
+    sub.next(2)
+    sub.next(3)
+    sub.next(4)
+
+    sub.subscribe({
+      next: (num: any) => console.log('Observable 2', num), // PRINTA 4, 5 E 6
+      error: (err: any) => console.log('Error', err),
+      complete: () => console.log('Completado')
+    })
+
+    sub.next(5)
+    sub.next(6)
+
+    sub.subscribe({
+      next: (num: any) => console.log('Observable 3', num), // PRINTA 6
+      error: (err: any) => console.log('Error', err),
+      complete: () => console.log('Completado')
+    })
+
+
+    //* REPLAY SUBJECT
+
+    // ARMAZENAM UMA QUANTIDADE DEFINIDA DE VALORES EMITIDOS
+
+    const sub2 = new ReplaySubject(4) // ESTE NÚMERO INDICA A QUANTIDADE DE VALORES EMITIDOS SERÁ PROPAGADO PARA QUEM SE SUBSCREVER. NESSE CASO, O PRÓXIMO QUE SE INSCREVER NESSE SUBJECT VAI PEGAR OS QUATRO ÚLTIMOS VALORES QUE FORAM EMITIDOS
+
+    sub2.next(1)
+    sub2.next(2)
+    sub2.next(3)
+    sub2.next(4)
+    sub2.next(5)
+    sub2.next(6)
+
+    sub2.subscribe({
+      next: (num: any) => console.log('Observable 4', num), // PRINTA 3, 4, 5, 6 //! NO ENTANTO, SE HOUVEREM SUBSCRIÇÕES DEPOIS DELE, SERÃO PRINTADAS TAMBÉM. ENTÃO, NESSE CASO, PRINTARIA 3,4,5,6,7 E 8.
+      error: (err: any) => console.log('Error', err),
+      complete: () => console.log('Completado')
+    })
+
+    sub2.next(7)
+    sub2.next(8)
+
+    //? A TÍTULO DE CURIOSIDADE, UM BEHAVIORSUBJECT É O MESMO QUE UM REPLAYSUBJECT(1)
+
+    //! ALÉM DE TUDO ISSO, O REPLAYSUBJECT TEM UMA OUTRA VANTAGEM. ELE PODE RECEBER UM SEGUNDO ARGUMENTO
+    //! NO SEU CONSTRUCTOR, INDICANDO INDICANDO O TEMPO(EM MILISSEGUNDOS) MÁXIMO QUE COMEÇARÁ A ARMAZENAR AS EMISSÕES.
+
+    const sub3 = new ReplaySubject(4, 9000)
+
+    sub3.next(1)
+    sub3.next(2)
+    sub3.next(3)
+    sub3.next(4)
+    sub3.next(5)
+
+    setTimeout(() => {
+      sub3.subscribe({
+        next: (num: any) => console.log('Observable 5', num),
+        error: (err: any) => console.log('Error', err),
+        complete: () => console.log('Completado')
+      })
+    }, 10000);
+
+    //* ASYNC SUBJECTS
+
+    // O ASYNC SUBJECT SOMENTE REBERÁ A ÚLTIMA EMISSÃO DO SUBJECT, //! E SOMENTE QUANDO O SUBJECT FOR COMPLETADO
+
+    const sub4 = new AsyncSubject()
+
+    sub4.next(1)
+    sub4.next(2)
+    sub4.next(3)
+    sub4.next(4)
+    sub4.next(5)
+
+    setTimeout(() => {
+      sub4.subscribe({
+        next: (num: any) => console.log('Observable 6', num),
+        error: (err: any) => console.log('Error', err),
+        complete: () => console.log('Completado')
+      })
+    }, 5000);
+
+    sub4.next(6)
+    sub4.next(7)
+
+    sub4.complete()  // VAI PRINTAR 7 E COMPLETADO
+
+    //? O ASYNC SUBJECT TEM UM COMPORTAMENTO SIMILAR AO BEAHVIOR SUBJECT, ARMAZENANDO A ÚLTIMA EMISSÃO.
+  }
+
+  aula06(){
+
+  }
+
+
 }
