@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { AsyncSubject, BehaviorSubject, bindCallback, defer, delay, filter, from, fromEvent, generate, interval, map, merge, observable, Observable, of, range, reduce, ReplaySubject, share, skip, Subject, subscribeOn, switchMap, take, takeUntil, tap } from 'rxjs';
+import { AsyncSubject, BehaviorSubject, bindCallback, catchError, debounceTime, defer, delay, distinctUntilChanged, filter, from, fromEvent, generate, interval, map, merge, observable, Observable, of, pluck, range, reduce, ReplaySubject, share, skip, startWith, Subject, subscribeOn, switchMap, take, takeUntil, tap } from 'rxjs';
+import { ajax } from 'rxjs/ajax';
 
 @Component({
   selector: 'curso-rw-dev',
@@ -21,7 +22,8 @@ export class CursoRwDevComponent implements OnInit, AfterViewInit{
 
   ngAfterViewInit(){
     // this.aprendendoFromEvent() //TODO ---- APRENDENDO fromEvent DA AULA 06
-    this.dragNDropReativo() //! aula07
+    // this.dragNDropReativo() //! aula07
+    this.autoComplete()
   }
 
   // PROGRAMAÇÃO REATIVA:
@@ -794,10 +796,10 @@ export class CursoRwDevComponent implements OnInit, AfterViewInit{
               let newNode = this.card.nativeElement.cloneNode(true) // cria uma copia da div
               let parentNode = this.card.nativeElement.parentNode //pega o elemento pai
               parentNode.insertBefore(newNode, this.card.nativeElement) //insere o novo elemento antes do elemento
-            }),
+            })
 
             // No entanto, nao quero que esse evento chegue ao meu subscribe. Para isso utilizaremos o skip()
-            skip(10)
+
           ))
 
           //! The insertBefore() method of the Node interface inserts a node before a reference node
@@ -864,6 +866,47 @@ export class CursoRwDevComponent implements OnInit, AfterViewInit{
       (num: any) => console.log(num) //! EMITE UM POINTER EVENT
     )
   }
+
+  @ViewChild('input', {static: false}) input: ElementRef
+  @ViewChild('list', {static: false}) list: ElementRef
+
+  autoComplete(){
+    const input$ = fromEvent(this.input.nativeElement, 'input')
+
+    const mostraResultado = (res: any) => {
+      this.list.nativeElement.innerHTML = res.map(
+        (e: any) => `<li>${e}</li>`
+      ).join('')
+    }
+
+    const buscaPaisesNaApi = (termo: any) =>  ajax(`https://restcountries.com/v3.1/name/${termo}`).pipe(
+      pluck('response'), //pega um objeto e extrai uma poropriedade desse objeto //! VEM UM OBJETO DO TIPO AJAXRESPONSE
+      map((resposta: any) => resposta.map((e: any) => e.name.common))
+    )
+
+    input$.pipe(
+      debounceTime(300),
+      pluck('target', 'value'),
+      map((e: any) => e.trim()),
+      distinctUntilChanged(),
+      switchMap((termo: any) => {
+        if(!termo || termo.length < 3) return of([])
+        return buscaPaisesNaApi(termo)
+      }),
+      catchError((err, source) => {
+        return source.pipe(
+          startWith([])
+        )
+      })
+    )
+    .subscribe(mostraResultado)
+
+
+
+
+
+  }
+
 
 }
 
