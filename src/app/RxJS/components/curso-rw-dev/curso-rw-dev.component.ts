@@ -1,12 +1,12 @@
-import { Component, OnInit } from '@angular/core';
-import { AsyncSubject, BehaviorSubject, filter, from, observable, Observable, reduce, ReplaySubject, share, Subject, subscribeOn } from 'rxjs';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AsyncSubject, BehaviorSubject, bindCallback, defer, delay, filter, from, fromEvent, generate, interval, map, merge, observable, Observable, of, range, reduce, ReplaySubject, share, skip, Subject, subscribeOn, switchMap, take, takeUntil, tap } from 'rxjs';
 
 @Component({
   selector: 'curso-rw-dev',
   templateUrl: './curso-rw-dev.component.html',
   styleUrls: ['./curso-rw-dev.component.css']
 })
-export class CursoRwDevComponent implements OnInit {
+export class CursoRwDevComponent implements OnInit, AfterViewInit{
 
   constructor() { }
 
@@ -16,7 +16,12 @@ export class CursoRwDevComponent implements OnInit {
     // this.aula03()
     // this.aula04()
     // this.aula05()
-    this.aula06()
+    // this.aula06()
+  }
+
+  ngAfterViewInit(){
+    // this.aprendendoFromEvent() //TODO ---- APRENDENDO fromEvent DA AULA 06
+    this.dragNDropReativo() //! aula07
   }
 
   // PROGRAMAÇÃO REATIVA:
@@ -567,9 +572,298 @@ export class CursoRwDevComponent implements OnInit {
     //? O ASYNC SUBJECT TEM UM COMPORTAMENTO SIMILAR AO BEAHVIOR SUBJECT, ARMAZENANDO A ÚLTIMA EMISSÃO.
   }
 
-  aula06(){
+  aula06(){ //* OPERADORES DE CRIAÇÃO
+
+    // OPERADORES DE CRIAÇÃO SÃO OPERADORES QUE CRIAM OBSERVABLES A PARTIR DE ALGUM DADO OU ALGUM TIPO DE CONJUNTO
+
+    //TODO --- OPERADOR of
+
+    // RECEBE VALORES SEPARADOS POR VÍRGULA (SERÃO OS VALORES FINAIS)
+
+    of(1, true, 'string').subscribe(
+      (res: any) => {
+        console.log(res) // PRINTA 1, TRUE E 'string', UM DE CADA VEZ
+      }
+    )
+
+    // SE COLOCARMOS UM ARRAY, ELE SERÁ EMITIDO //! INTEIRO
+
+    of([1,2,3]).subscribe(
+      (res: any) => {
+        console.log(res) // PRINTA [1,2,3] DE UMA SÓ VEZ
+      }
+    )
+
+    //TODO --- OPERADOR from
+
+    // DIFERENTEMENTE DO OPERADOR .of, O OPERADOR .from //! RECEBE ESTRUTURAS DE DADOS E, A PARTIR DISSO, TRANSFORMA OS VALORES EM OBSERVABLES.
+
+    from([1,2,3]).subscribe(
+      (res: any) => {
+        console.log(res) // PRINTA 1, 2, 3 SEPARADAMENTE
+      }
+    )
+
+    from(Promise.resolve(1)).subscribe( //? Maneira de converter promise em observable.
+      (res: any) => {
+        console.log(res) // PRINTA 1
+      }
+    )
+
+
+    // EXEMPLO COM GENERATORS:
+
+    //! PS: A generator is a function that can stop midway and then continue from where it stopped.
+    //! In short, a generator appears to be a function but it behaves like an iterator.
+
+    //! Here are some other common definitions of generators —
+    //! Generators are a special class of functions that simplify the task of writing iterators.
+    //! A generator is a function that produces a sequence of results instead of a single value, i.e you generate ​a series of values.
+
+    //! {
+    //!   value: Any,
+    //!   done: true|false
+    //! }
+
+    //! The value property will contain the value. The done property is either true or false. When the done becomes true,
+    //! the generator stops and won't generate any more values.
+
+    let generator = function* generate() {
+      let i = 1
+      while(true) {
+        yield i++
+      }
+    }
+
+    from(generator())
+      .pipe(
+        take(10)
+      )
+      .subscribe(
+        (res: any) => {
+          console.log(res)
+      }
+    )
+
+    // ALÉM DISSO, NO FROM PODEMOS APLICAR OUTRO OBSERVABLE:
+
+    from(of(1,2,3))
+      .subscribe(
+        (res: any) => {
+          console.log(res)
+      }
+    )
+
+
+    //TODO --- OPERADOR interval
+
+    // EMISSÃO DE VALORES(NUMÉRICO.....1,2,3,4...n) A PARTIR DE UM CERTO INTERVALO DE TEMPO
+
+    // COM ELE, DEFINIMOS UMA QUANTIDADE DE TEMPO QUE O INTERVALO VAI SER EXECUTADO
+
+    interval(1000)
+      .subscribe(
+        (num: any) => {
+          console.log(num)
+        }
+      )
+
+    //TODO --- OPERADOR range
+
+    // EMITE VALORES NÚMERICOS TAMBÉM, MAS COM INTERVALO DEFINIDO
+
+    // AO DECLARÁ-LO, INFORMAMOS O VALOR INICIAL E A QUANTIDADE DE EMISSÕES A PARTIR DESSE INTERVALO INICIAL
+
+    range(1000,10)
+      .subscribe(
+        (num: any) => {
+          console.log(num)
+        }
+      )
+
+    //TODO --- OPERADOR generate
+
+    // SEMELHANTE A UM FOR
+
+    generate(0, condicaoParada => condicaoParada < 10, functionIncremento => functionIncremento + 1) // esse incremento é imutável, não é um functionIncremento++
+        .subscribe(
+          (num: any) => {
+            console.log(num)
+          }
+        )
+
+    //TODO --- OPERADOR fromEvent
+
+    //? ANOTAÇÕES ESTÃO DENTRO DO MÉTODO aprendendoFromEvent()
+
+    //TODO --- OPERADOR defer
+
+    // ENCAPSULA QUALQUER FUNÇÃO E ELA SERÁ EXECUTADA SOMENTE A PARTIR DO MOMENTO EM QUE EU TENHO UM SUBSCRIBE
+    // BOA PARA SE INSCREVER CONDICIONALMENTE EM DIFRENTES OBSERVABLES DEPENDENDO DA CONDIÇÃO
+
+    let teste = (a: any) => defer(() => {
+      return a > 10 ? of(1) : of(2)
+    })
+
+    teste(11) //! SE FOR < 10 RETORNA 1, SE FOR > 10 RETORNA 2
+      .subscribe(
+        v => console.log('defer',v)
+      )
+
+    //TODO --- OPERADOR bindCallback
+
+    const a = (a: any, cb: any) => {
+      cb(a)
+    }
+
+    //! A PARTIR DO MOMENTO EM QUE EXECUTAMOS O CALLBACK, O SUBSCRIBE É ATIVADO
+
+    bindCallback(a)(10)
+      .subscribe(
+        (v: any) => console.log(v) // output: 10
+      )
+
+
+
+
+
+
+
+
 
   }
 
+  @ViewChild('card', {static: false}) card: ElementRef
+
+  dragNDropReativo(){ //* CRIANDO UM DRAG'N'DROP REATIVO
+
+    //? ANOTAÇÕES SOBRE EVENTO DE CLICK, MOUSEDOWN E MOUSEUP:
+
+    //? CLICK: EVENTO DISPARADO QUANDO O CLICK E A SOLTURA DO CLICK OCORREM NO MESMO ELEMENTO
+    //? MOUSEDOWN: EVENTO DISPARADO NO CLICK, NAO NA SOLTURA
+    //? MOUSEUP: EVENTO DISPARADO NA SOLTURA
+
+    //? click fires after both the mousedown and mouseup events have fired, in that order.(DOCUMENTAÇÃO DO MDN)
+
+
+
+    const mouseDown$ = fromEvent(this.card?.nativeElement, 'mousedown')
+    const mouseUp$ = fromEvent(document, 'mouseup')
+    const mouseMove$ = fromEvent(document, 'mousemove')
+    const keyUp$ = fromEvent(document, 'keyup')
+
+    //! O FLUXO É O SEGUINTE: QUANDO O MOUSE FOR PRESSIONADO(MOUSEDOWN), SE ELE ESTIVER
+    //! PRESSIONADO, CADA EVENTO DE MOVIMENTO QUE OCORRER SERÁ ESCUTADO E REPASSADO PARA
+    //! O CARD ATÉ QUE O EVENTO DE MOUSEUP ACONTEÇA
+
+    //! ENQUANTO ESTIVER PRESSIONADO E MOVENDO A DIV ESTÁ MOVENDO. SE SOLTARMOS , ELE PARA DE MOVIMENTAR
+
+    const dragAndDrop$ = mouseDown$.pipe( //TODO --- QUANDO OCORRER UM EVENTO NO MEU MOUSEDOWN
+      //! o switchMap é um operador de controle de fluxo(controle de paralelismo ou controle de concorrência). temos também o concatMap, o mergeMap e o exhaustMap.
+      //! o switchMap funciona da seguinte forma: cada vez que uma nova emissão acontecer e eu precisar trocar ele por um novo observable, o observable anterior será desinscrito
+      //! por que queremos o switchMap aqui ? Por que precisamos pegar o movimento inicial do mouseDown(start). A partir desse evento incial, podemos ouvir(nos inscrever) o evento de mousemove. Assim, usamos o switchMap para evitar que toda vez que tenha um mouseDown$ nos nos inscrevamos nesse evento. O switchmap alternará para o mouseMove$
+      // tap(console.log),
+      map((event: any) => ({ // map transforma valores
+        x: event.clientX,
+        y: event.clientY,
+        target: { // o target é o próprio card(div.card)
+          x: event.target.offsetLeft,
+          y: event.target.offsetTop
+        }
+        //essas informações servem para nós pegarmos o ponto inicial do clique para podermos aplicar as movimentações
+      })),
+      // tap(console.log),
+      switchMap(
+        start =>
+          merge( // passo aqui dentro a quantidade de observables que eu quero unir
+            mouseMove$.pipe(  //TODO --- EU VOU ME INSCREVER NO MOUSEMOVE E VOU FICAR OUVINDO-O ATÉ
+            map((event: any) => ({
+              x: event.clientX - start.x + start.target.x,
+              y: event.clientY - start.y + start.target.y,
+            })),
+            takeUntil(mouseUp$) // TODO --- QUE TENHA UM MOUSEUP
+          ),
+          keyUp$.pipe(
+            filter((event: any) => event.which === 32), // filtra a barra de espaço
+            // A partir disso, quero executar um efeito colateral, NÃO NO MEU SUBSCRIBE, POIS ELE ESTÁ FAZENDO O DRAG'N'DROP
+            // Para isso, utilizaremos o operador tap()
+
+            //O tap executa um efeito pegando o valor que foi emitido e RETORNA O PRÓPRIO VALOR, SEM ALTERAR A STREAM.
+
+            tap(tecla => {
+              let newNode = this.card.nativeElement.cloneNode(true) // cria uma copia da div
+              let parentNode = this.card.nativeElement.parentNode //pega o elemento pai
+              parentNode.insertBefore(newNode, this.card.nativeElement) //insere o novo elemento antes do elemento
+            }),
+
+            // No entanto, nao quero que esse evento chegue ao meu subscribe. Para isso utilizaremos o skip()
+            skip(10)
+          ))
+
+          //! The insertBefore() method of the Node interface inserts a node before a reference node
+          //! as a child of a specified parent node.
+
+          //! If the given node already exists in the document, insertBefore() moves it from its
+          //! current position to the new position. (That is, it will automatically be removed from
+          //! its existing parent before appending it to the specified new parent.)
+
+      )
+    )
+
+    dragAndDrop$
+      .pipe(
+        delay(250) //delay no arrasto
+
+        // Agora, vamos supor que, sempre que eu apertar a barra de espaço, ele deixe uma copia do meu card.
+        // Para isso, precisaremos da uma noção de concatenação de streams
+
+        //o que eu quero? Toda vez que meu card estiver em movimento(o drag estiver ativo), sempre que eu aprto a barra de espaço, um card fica para trás
+        //! Portanto, dentro do switchMap, precisaremos CONCATENAR OS EVENTOS DE MOUSEMOVE E KEYUP
+        //! PARA ISSO, UTILIZAREMOS UM OPERADOR DE CRIAÇÃO CHAMADO merge, QUE UNE DOIS STREAMS
+
+
+
+
+
+      )
+      .subscribe(
+        res => {
+          this.card.nativeElement.style.top = `${res.y}px`
+          this.card.nativeElement.style.left = `${res.x}px`
+        }
+      )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  }
+
+  @ViewChild('button', {static: false}) button: ElementRef
+
+  aprendendoFromEvent(){
+    //TODO --- fromEvent
+
+    // PODEMOS TRANSFORMAR EVENTOS DO JAVASCRIPT EM OBSERVABLES TAMBÉM
+
+    // PARA ISSO, DEVEMOS TER UMA REFERÊNCIA NO HTML PARA ACESSAR ESSE EVENTO. NESSE CASO, USAREMOS UM BOTÃO.
+
+    let button$ = fromEvent(this.button?.nativeElement, 'click')
+
+    button$.subscribe(
+      (num: any) => console.log(num) //! EMITE UM POINTER EVENT
+    )
+  }
 
 }
+
