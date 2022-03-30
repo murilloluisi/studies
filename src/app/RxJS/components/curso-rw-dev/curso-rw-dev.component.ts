@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { AsyncSubject, BehaviorSubject, bindCallback, catchError, debounceTime, defer, delay, distinctUntilChanged, filter, from, fromEvent, generate, interval, map, merge, observable, Observable, of, pluck, range, reduce, ReplaySubject, share, skip, startWith, Subject, subscribeOn, switchMap, take, takeUntil, tap } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
@@ -9,7 +10,8 @@ import { ajax } from 'rxjs/ajax';
 })
 export class CursoRwDevComponent implements OnInit, AfterViewInit{
 
-  constructor() { }
+  constructor(
+  ) { }
 
   ngOnInit() {
     // this.aula01()
@@ -879,33 +881,37 @@ export class CursoRwDevComponent implements OnInit, AfterViewInit{
       ).join('')
     }
 
-    const buscaPaisesNaApi = (termo: any) =>  ajax(`https://restcountries.com/v3.1/name/${termo}`).pipe(
-      pluck('response'), //pega um objeto e extrai uma poropriedade desse objeto //! VEM UM OBJETO DO TIPO AJAXRESPONSE
-      map((resposta: any) => resposta.map((e: any) => e.name.common))
+    const buscaPaisesNaApi = (termo: any) => ajax(`https://restcountries.com/v3.1/name/${termo}`).pipe( //! O AJAX É A FORMA DO RXJS FAZER AS REQUISIÇÕES. É COMO SE FOSSE O FETCH, PORÉM ELE JÁ TEM ALGUMAS PECULIARIDADES, COMO PODER CANCELAR A REQUISIÇÃO DEPENDENDO DO TIPO DE OPERADOR QUE UTILIZARMOS
+      // tap(termo => console.log('1',termo)), //OUTPUT: AjaxResponse
+      pluck('response'), //pega um objeto e extrai uma propriedade desse objeto //! VEM UM OBJETO DO TIPO AJAXRESPONSE
+      // tap(termo => console.log('2',termo)), //OUTPUT: Propriedade response do objeto do tipo AjaxResponse
+      map((resposta: any) => resposta.map((e: any) => e.name.common)),
+      // tap(termo => console.log('3',termo)), //OUTPUT: Nome dos Países
     )
 
     input$.pipe(
-      debounceTime(300),
-      pluck('target', 'value'),
-      map((e: any) => e.trim()),
-      distinctUntilChanged(),
-      switchMap((termo: any) => {
-        if(!termo || termo.length < 3) return of([])
-        return buscaPaisesNaApi(termo)
+      debounceTime(300), //!SEMPRE QUE O STREAM FOR EMITIDO, SÓ PEGARÁ A ÚLTIMA EMISSÃO NUM INTERVALO DE 300ms
+      pluck('target', 'value'), //! PEGA A PROPRIEDADE VALUE DA PROPRIEDADE TARGET DO EVENTO
+      map((e: any) => e.trim()), //! O TRIM APAGA ESPAÇOS EM BRANCO NO INÍCIO E FIM DE STRINGS -- // AFIM DE IGNORAR QUE O USUÁRIO APERTE UM MONTE DE ESPAÇO
+      distinctUntilChanged(), //! DISTINGUE ENTRE AS MUDANÇAS QUE TIVERAM ENTRE O VALOR ANTERIOR E O ATUAL(EX: DIGITAMOS BRASIL, APAGAMOS UMA LETRA E DIGITAMOS "L" NOVAMENTE. ELE NAO VAI FAZER A REQUISIÇÃO NOVAMENTE).PODE VARIAR DE ACORDO COM O DEBOUNCE TIME
+      switchMap((termo: any) => { //! O AJAX JÁ SE DESINSCREVE QUANDO CANCELAMOS UMA REQUISIÇÃO
+        if(!termo || termo.length < 3) return of([]) //! SEMPRE QUE EU QUISER FAZER UMA REQUISIÇÃO(APERTEI A TECLA E FIZ UMA REQUISIÇÃO), SE ELA NÃO TERMINOU AINDA, E EU QUERO FAZER UMA NOVA REQUISIÇÃO,("SE A REQUISIÇÃO FICOU MEIO PRESA LA NO SERVIDOR, ESTA DEMORANDO MUITO PRA RESPONDER, E EU APAGO TUDO E DIGITO UM NOVO PAÍS, ELE VAI MANDAR UMA NOVA REQUISIÇÃO E EU QUERO QUE ELE CANCELE A REQUISIÇÃO ANTERIOR")
+        return buscaPaisesNaApi(termo) //se não houver nada no campo ou a string tiver menos que 3 caracteres, retorna uma lista vazia
       }),
-      catchError((err, source) => {
-        return source.pipe(
-          startWith([])
+      catchError((err, source) => { //! SE EU DIGITO UM VALOR ERRADO, OCORRE UM ERRO NA REQUISIÇÃO, O QUE MATA A STREAM. NÃO QUEREMOS ISSO, PORTANTO TRATAREMOS O ERRO.
+        return source.pipe(  //! SOURCE É A FONTE DO STREAM(É O INPUT). DENTRO DO CATCHERROR, PODEMOS FAZER UMA TRATATIVA E RETORNAR UMA NOVA FONTE, OU A MESMA FONTE. DEVEMOS RETORNAR UM STREAM PARA QUE POSSAMOS CONTINUAR O FLUXO
+          startWith([]) //! LIMPA QUANDO DA ERRO. SE PASSARMOS O SOURCE PURO, ELE VAI COM OS MESMOS OPERADORES DAS LINHAS ACIMA, E CAIRÁ NO MESMO ERRO.
+                        //! O STARTWITH FAZ COM QUE, SEMPRE QUE A INSCRIÇÃO COMEÇAR, ELE EMITA ESSE VALOR
         )
       })
     )
-    .subscribe(mostraResultado)
-
-
-
-
-
+    .subscribe(mostraResultado) //! No final desse stream, receberemos um array de dados(strings, que serão o nome dos países)
   }
+
+
+
+
+
 
 
 }
