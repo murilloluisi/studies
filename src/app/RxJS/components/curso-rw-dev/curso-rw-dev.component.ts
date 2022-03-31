@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { AsyncSubject, BehaviorSubject, bindCallback, catchError, debounceTime, defer, delay, distinctUntilChanged, filter, from, fromEvent, generate, interval, map, merge, observable, Observable, of, pluck, range, reduce, ReplaySubject, share, skip, startWith, Subject, subscribeOn, switchMap, take, takeUntil, tap } from 'rxjs';
+import { AsyncSubject, BehaviorSubject, bindCallback, catchError, combineAll, concatMap, debounceTime, defer, delay, distinctUntilChanged, filter, from, fromEvent, generate, interval, map, merge, mergeMap, observable, Observable, of, pluck, range, reduce, ReplaySubject, share, skip, startWith, Subject, subscribeOn, switchMap, take, takeUntil, tap } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
 
 @Component({
@@ -20,12 +20,13 @@ export class CursoRwDevComponent implements OnInit, AfterViewInit{
     // this.aula04()
     // this.aula05()
     // this.aula06()
+    this.aula09()
   }
 
   ngAfterViewInit(){
     // this.aprendendoFromEvent() //TODO ---- APRENDENDO fromEvent DA AULA 06
-    // this.dragNDropReativo() //! aula07
-    this.autoComplete()
+    // this.dragNDropReativo() //TODO aula07
+    // this.autoComplete() //TODO aula08
   }
 
   // PROGRAMAÇÃO REATIVA:
@@ -907,6 +908,60 @@ export class CursoRwDevComponent implements OnInit, AfterViewInit{
     )
     .subscribe(mostraResultado) //! No final desse stream, receberemos um array de dados(strings, que serão o nome dos países)
   }
+
+  aula09() { //* CONTROLANDO CONCORRÊNCIA
+    // O RXJS NOS DÁ 4 OPERADORES PARA CINTROLAR CONCORRÊNCIA: mergeMap, concatMap, switchMap e exhaustMap.
+
+    const api = (response: any, delay: any) => ajax({
+      url: `http://127.0.0.1:5200/response/${JSON.stringify(response)}/delay/${delay}/`
+    })
+
+    const a = api({data: "A"}, 1000)
+    const b = api({data: "B"}, 1000)
+    const c = api({data: "C"}, 800)
+    const d = api({data: "D"}, 1800)
+    const e = api({data: "E"}, 1200)
+    const f = api({data: "F"}, 1600)
+    const g = api({data: "G"}, 2800)
+    const h = api({data: "H"}, 700)
+
+    of(a, b, c, d, e, f, g, h)
+      .pipe(
+        //! 1º CASO: MERGEMAP --> O MERGEMAP É COMO SE FOSSE UMA PROMISE, COM VARIOS THENs ENCADEADOS, E TODAS REQUISIÇÕES SERÃO EXECUTADAS AO MESMO TEMPO, AS PRIMEIRAS RESPOSTAS QUE CHEGAREM SERÃO EMITIDAS( DEPENDE DA API, POIS ALGUMAS TEM LIMITE MAXIMO DE REQUISIÇÕES CONCORRENTES)
+        // mergeMap(value => value), // vai se subscrever em cada um dos observables
+        // mergeMap(e => e, 4) //? PODEMOS LIMITAR O NÚMERO INICIAL DE REQUISIÇÕES PARALELAS (ANALOGIA DO FUNIL, ONDE CABEM APENAS 4 BOLINHAS POR VEZ, E SE UMA PASSAR, VEM A PRÓXIMA)
+
+        //! 2º CASO: CONCATMAP --> O CONCATMAP TEM UM COMPORTAMENTO SERIAL. ELE EMITIRÁ AS RESPOSTAS EM ORDEM, SEMPRE APÓS A ANTERIOR TER SIDO EMITIDA
+        // concatMap(value => value)
+
+        //! 3º CASO: SWITCHMAP --> O SWITCHMAP CANCELARÁ TODAS AS REQUISIÇÕES EXCETO A ÚLTIMA.
+        // switchMap(value => value)
+
+        //! 4º CASO: EXHAUSTMAP --> O OPOSTO DO SWITCHMAP. MANTÉM APENAS A PRIMEIRA REQUISIÇÃO. TODAS QUE ENTRAREM APÓS A PRIMEIRA REQUISIÇÃO SERÁ CANCELADA
+        // exhaustMaP(value => value)
+
+        //TODO PODEMOS TAMBÉM UTILIZAR OS OPERADORES DE CRIAÇÃO merge E concat NO LUGAR DO of
+
+        //! EXTRA: E SE QUISESSEMOS JUNTAR TODAS AS REQUISIÇÕES EM UM ARRAY E, DEPOIS QUE TODOS TERMINASSEM, TIVERMOS UMA UNICA RESPOSTA? PARA ISSO, PODEMOS UTILIZAR O OPERADOR combineAll()
+        combineAll(value => value) //? Quando o stream terminar, ele vai combinar todos em um único array e retornar esse array como resposta, num único subscribe.
+      )
+
+
+    .subscribe(
+      res => console.log(res),
+      err => console.log(err),
+      () => {}
+    )
+
+
+
+
+
+
+  }
+
+
+
 
 
 
