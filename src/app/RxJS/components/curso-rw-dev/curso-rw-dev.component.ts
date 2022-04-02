@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { AsyncSubject, BehaviorSubject, bindCallback, catchError, combineAll, concatMap, debounceTime, defer, delay, distinctUntilChanged, filter, from, fromEvent, generate, interval, map, merge, mergeMap, observable, Observable, of, pluck, range, reduce, ReplaySubject, share, skip, startWith, Subject, subscribeOn, switchMap, take, takeUntil, tap } from 'rxjs';
+import { AsyncSubject, BehaviorSubject, bindCallback, catchError, combineAll, concatMap, debounceTime, defer, delay, distinctUntilChanged, filter, from, fromEvent, generate, interval, map, merge, mergeMap, observable, Observable, of, pluck, race, range, reduce, ReplaySubject, share, skip, startWith, Subject, subscribeOn, switchMap, take, takeUntil, tap } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
 
 @Component({
@@ -20,13 +20,15 @@ export class CursoRwDevComponent implements OnInit, AfterViewInit{
     // this.aula04()
     // this.aula05()
     // this.aula06()
-    this.aula09()
+    // this.aula09()
   }
 
   ngAfterViewInit(){
     // this.aprendendoFromEvent() //TODO ---- APRENDENDO fromEvent DA AULA 06
     // this.dragNDropReativo() //TODO aula07
     // this.autoComplete() //TODO aula08
+    this.aula10()
+
   }
 
   // PROGRAMAÇÃO REATIVA:
@@ -960,14 +962,47 @@ export class CursoRwDevComponent implements OnInit, AfterViewInit{
 
   }
 
+  @ViewChild('button1', {static: false}) button1: ElementRef
+  @ViewChild('button2', {static: false}) button2: ElementRef
+  @ViewChild('content', {static: false}) content: ElementRef
 
 
+  aula10(){ //* CANCELANDO REQUISIÇÕES EM ANDAMENTO
 
+    const api = (personId: number) => ajax({
+      url: `https://swapi.co/api/people/${personId}`
+    })
 
+    const buttonRequest$ = fromEvent(this.button2.nativeElement, 'click')
+    const buttonStopRequest$ = fromEvent(this.button1.nativeElement, 'click')
 
+    const setContent = (text: any) => (this.content.nativeElement.innerHTML = text)
 
+    const request = api(1).pipe(
+      pluck("response", "name"),
+      tap(setContent("teste"))
+    )
 
+    const requesting = (bool: boolean) => {
+      this.button1.nativeElement.style = showElement(!bool)
+      this.button2.nativeElement.style = showElement(bool)
+    }
 
+    const showElement = (bool: boolean) => (bool ? "display: block" : "display: none")
 
+    const stopRequest = buttonStopRequest$.pipe(
+      tap(() => setContent("Requisição Cancelada"))
+    )
+
+    buttonRequest$
+      .pipe(
+        tap(() => {
+          requesting(true)
+          setContent("Carregando...")
+        }),
+      switchMap(() => race(request, stopRequest)), //! O RACE IRÁ EXECUTAR O OBSERVABLE QUE CHEGAR PRIMEIRO
+      tap(() => requesting(false))
+      )
+      .subscribe()
+  }
 }
-
