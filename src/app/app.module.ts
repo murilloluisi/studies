@@ -1,3 +1,6 @@
+import { AuthorComponent } from './Udemy/Angular Styling & Animations/author/author.component';
+import { QuoteComponent } from './Udemy/Angular Styling & Animations/quote/quote.component';
+import { GoalComponent } from './Udemy/Angular Styling & Animations/goal/goal.component';
 import { CursoRwDevComponent } from './RxJS/components/curso-rw-dev/curso-rw-dev.component';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
@@ -11,7 +14,10 @@ import { FormsModule } from '@angular/forms';
   declarations: [
     AppComponent,
     JSStudiesComponent,
-    CursoRwDevComponent
+    CursoRwDevComponent,
+    GoalComponent,
+    QuoteComponent,
+    AuthorComponent
   ],
   imports: [
     BrowserModule,

@@ -1,0 +1,15 @@
+:host { /*! SELECIONA O SELECTOR, NO CASO, <app-goal>  */
+  display: inline-block; /*! BLOCK DEIXA UM EMBAIXO DO OUTRO */
+  border: 1px solid black;
+  border-radius: 5px 5px 0 0;
+  padding: 20px;
+  width: 300px;
+  margin: 30px;
+  text-align: center;
+}
+
+:host(.active) { /*! SELECIONA O ARGUMENTO QUE TIVER DENTRO, SE HOUVER, DO ELEMENTO HOST QUE SELECIONAMOS ANTERIORMENTE */
+  border: 3px solid blue;
+  padding: 18px; /*? AUMENTEI 2px O BORDER, PORTANTO DIMINUO 2px O PADDING */
+
+}

@@ -1,0 +1,36 @@
+h1 {
+  color: red; /*! OVERWRITE THE GLOBAL STYLE */
+}
+
+/* #quote {
+  border: 1px solid black;
+  padding: 20px;
+} */
+
+:host {
+  display: block; /*! SE NÃO FIZER ISSO, QUEBRA
+   */
+  border: 1px solid black;
+  padding: 20px;
+}
+
+:host(.favorite) { /*! THE FOLLOWING STYLES ARE ONLY ADDED IF THE HOST ELEMENT ALSO HAS THE .favorite CLASS */
+  border: 2px solid red;
+}
+
+:host-context(.boring) {/*! THE :host-context SIMPLY CHECKS: IS YOUR ELEMENT(THE COMPONENT ITSELF) SOMEHOW NESTED INSIDE OF A ELEMENT OF A .boring CSS CLASS? IMPORTANT: IT DOESN'T HAVE TO BE NECESSARELY THE PARENT COMPONENT  */
+  border: 1px solid #ccc;
+  color: #ccc;
+}
+
+/*? WE CAN ALSO SET NESTED CSS SELECTORS INSIDE THE PARAMENTER OF .host-context, LIKE .boring #very-boring */
+
+
+:host-context(.boring) /deep/ h1 { /*! /deep/ OVERRIDES ALL h1 INSIDE THE SELECTED COMPONENT  */
+  color: #ccc;
+}
+
+/*? /deep/ AND >>> ARE THE SAME THING */
+
+
+
