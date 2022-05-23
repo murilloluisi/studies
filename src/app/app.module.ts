@@ -5,6 +5,7 @@ import { CursoRwDevComponent } from './RxJS/components/curso-rw-dev/curso-rw-dev
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 
 import { AppComponent } from './app.component';
 import { JSStudiesComponent } from './JS/js-studies/js-studies.component';
@@ -22,8 +23,8 @@ import { FormsModule } from '@angular/forms';
   imports: [
     BrowserModule,
     FormsModule,
-    HttpClientModule
-
+    HttpClientModule,
+    BrowserAnimationsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
