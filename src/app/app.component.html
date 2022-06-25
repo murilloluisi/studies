@@ -8,7 +8,7 @@
           (click)="goal.isActiveGoal = !goal.isActiveGoal"
           [ngClass]="{active: goal.isActiveGoal}">
 
-</app-goal> -->
+</app-goal> --> -->
 
 <!-- <h1>My Quotes</h1>
 <div class="interesting">
@@ -16,7 +16,7 @@
              [ngStyle]="{'width': isFavorite ? '600px' : '400px'}"
              (click)="isFavorite =!isFavorite">
   </app-quote> -->
-             <!-- [ngStyle]="{'width.px': isFavorite ? 600 : 400}" -->
+             <!-- [ngStyle]="{'width.px': isFavorite ? 600 : 400}"
              <!--! COMO O ARGUMENTO DO ngStyle É UM OBJETO JS, PODEMOS COLOCAR O NOME DO ESTILO COMO PROPRIEDADE(CAMELCASE): {backgroundColor: 'red'} AO INVÉS DE {'background-color': red} <AMBOS FUNCIONAM> -->
 <!-- </div>
 
@@ -30,26 +30,27 @@
 </div> -->
 
 <!--* Class 46 - Using the transition property to Add Transitions -->
-<div id="div1"
+
+ <div id="div1"
      (click)="divClicked = true"
      [ngClass]="{marked: divClicked}"
      [ngStyle]="{backgroundColor: divClicked ? 'red' : 'blue'}">
 </div>
 
-<hr>
+<hr> 
 
-<div id="div2"
+ <div id="div2"
      (click)="doAnimate = true"
      [ngClass]="{animate: doAnimate}">
 </div>
 
-<hr>
+<hr> 
 
 <div id="loading-bar">
   <div class="loading-bar-progress">
 
   </div>
-</div>
+</div> -->
 
 <hr>
 
@@ -68,8 +69,9 @@
 
 <div [@clickedState]="clickInfo"
      (mousedown)="clickInfo = 'mousedown'"
-     (click)="onClickSimple()"> <!-- #simple -->
+     (click)="onClickSimple()"> 
 </div>
+
 
 <hr>
 
@@ -94,10 +96,50 @@
 <span [@numberEnteredState]="numberEntered == 0 ? 'selected' : 'unselected' ">0</span>
 
 
+<div [@boxColor]="color" class="box-color" (click)="onBoxClick()">
+  TEXT
+</div>
 
+<br>
 
+<div id="parent">
+    <div id="wrapper">
+        <div id="child"></div>
+    </div>
+</div>
 
+<div [@clicked]="clickState" 
+     (click)="clickState === 'default' ? clickState = 'reverse' : clickState = 'default'"
+     style="width: 100px; height: 100px; margin: 50px 50px; border: 1px solid black; cursor: pointer;">
 
+</div>
+<button (click)="width = width - 50">
+  SHRINK
+</button>
+<button (click)="animate = true">
+  ANIMATE ME
+</button>
 
+<style>
+  p {
+    border: 1px solid red;
+    background-color: aquamarine;
+  }
+</style>
 
+<p [@animateState]="animate ? 'animate' : 'donotanimate'" 
+  [ngStyle]="{'width.px': width}">
+  Shrink Me
+</p>
 
+<div class="container-testes" @testesOperators>
+  <div class="box-1"></div>
+  <div class="box-2"></div>
+
+  <br>
+
+  <div class="list-item"
+       *ngFor="let item of [1,2,3,4,5]">
+  </div>
+
+</div>
