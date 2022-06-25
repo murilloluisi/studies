@@ -142,4 +142,34 @@
        *ngFor="let item of [1,2,3,4,5]">
   </div>
 
+  <br><br>
+
+  <img src="https://picsum.photos//200" alt="" [@photoState]="photoState">
+
+
+  <button (click)="photoState = 'reset'">Reset</button>
+  <button (click)="photoState = 'enlarge'">Enlarge</button>
+  <button (click)="photoState = 'translate'">Translate</button>
+  <button (click)="photoState = 'rotate'">Rotate</button>
+
+  <!-- <img src="https://picsum.photos//200" alt="2" [@photoState]="randomState"> -->
+
+
+  <img src="https://picsum.photos//200" alt="2" [@photoState2]="randomState">
+
 </div>
+
+<br><br>
+
+<div @photosAnimation>
+  <img class="stagger" src="https://picsum.photos//200" alt="">
+
+<br>
+
+<img class="stagger" src="https://picsum.photos//200" alt="">
+
+<br>
+
+<img class="stagger" src="https://picsum.photos//200" alt="" >
+</div>
+

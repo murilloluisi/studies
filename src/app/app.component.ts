@@ -1,5 +1,5 @@
 import { animate, keyframes, query, stagger, state, style, transition, trigger } from '@angular/animations';
-import { Component, Renderer2 } from '@angular/core';
+import { Component, OnInit, Renderer2 } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -155,12 +155,68 @@ import { Component, Renderer2 } from '@angular/core';
         ])
 
       ])
+    ]),
+
+    trigger('photoState', [
+      state('enlarge' , style({
+        transform: 'scale(1.5)'
+      })),
+      state('translate' , style({
+        transform: 'translateX(-100%) translateY(50px)' 
+      })),
+      state('rotate' , style({
+        transform: 'rotateY(180deg) rotateZ(90deg)'
+      })),
+      transition('* => *', animate('1000ms ease-out')),
+      
+    ]),
+
+    trigger('photoState2', [
+      state('enlarge' , style({
+        transform: 'scale(1.5)'
+      })),
+      state('translate' , style({
+        transform: 'translateX(-100%) translateY(50px)' 
+      })),
+      state('rotate' , style({
+        transform: 'rotateY(180deg) rotateZ(90deg)'
+      })),
+      transition('* => enlarge', animate('1000ms ease-out')),
+      transition('* => translate', animate('1000ms ease-out')),
+      transition('* => rotate', animate('1000ms ease-out')),
+
+      transition('* => reset', [
+        animate('5000ms', keyframes([
+          style({transform: 'translateX(0) rotateY(0)',  offset: 0.1}),
+          style({transform: 'translateX(50%) rotateY(90deg)',   offset: 0.3}),
+          style({transform: 'translateY(-75%) rotateY(180deg)',   offset: 0.6  }),
+          style({transform: 'translateX(-100%)',   offset: 1}),
+        ]))
+      ])
+    ]),
+
+    trigger('photosAnimation', [
+      transition('* => *', [
+        query('.stagger', style({ transform: 'translateX(-100%)'})),
+        query('.stagger', 
+          stagger('600ms', [
+            animate('900ms', style({ transform: 'translateX(0)'}))
+          ])
+        )
+      ])
     ])
   ]
 })
 
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'Studies';
+
+  photoState: string = 'reset'
+
+  randomPhotoState: string[] = ['reset', 'enlarge', 'translate', 'rotate']
+  randomIndex = 0
+  randomState = 'move'
+
 
   color = 'red'
 
@@ -208,6 +264,12 @@ export class AppComponent {
     private renderer: Renderer2
   ) {
 
+  }
+  ngOnInit(): void {
+    setInterval(() => {
+      let newIndex = Math.floor(Math.random() * this.randomPhotoState.length)
+      this.randomState = this.randomPhotoState[newIndex]
+    }, 2000)
   }
 
   isFavorite = false
